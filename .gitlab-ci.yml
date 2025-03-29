@@ -11,16 +11,22 @@ build_image:
     DOCKER_TLS_CERTDIR: ""
   script:
     - docker build -t server-health-dashboard .
-  only:
-    - main
+    - docker save server-health-dashboard -o server-health-dashboard.tar
+  artifacts:
+    paths:
+      - server-health-dashboard.tar
+    expire_in: 1 hour
 
 test_app:
   stage: test
-  image: server-health-dashboard
+  image: docker:20.10.16
+  services:
+    - docker:20.10.16-dind
+  variables:
+    DOCKER_TLS_CERTDIR: ""
   script:
-    - echo "Running a simple test to check if the app starts"
-    - python3 app.py &
+    - docker load -i server-health-dashboard.tar
+    - docker run -d -p 5000:5000 --name app server-health-dashboard
     - sleep 5
-    - curl http://localhost:5000 || exit 1
-  only:
-    - main
+    - docker exec app curl http://localhost:5000
+    - docker stop app
