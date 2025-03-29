@@ -1,0 +1,26 @@
+stages:
+  - build
+  - test
+
+build_image:
+  stage: build
+  image: docker:20.10.16
+  services:
+    - docker:20.10.16-dind
+  variables:
+    DOCKER_TLS_CERTDIR: ""
+  script:
+    - docker build -t server-health-dashboard .
+  only:
+    - main
+
+test_app:
+  stage: test
+  image: server-health-dashboard
+  script:
+    - echo "Running a simple test to check if the app starts"
+    - python3 app.py &
+    - sleep 5
+    - curl http://localhost:5000 || exit 1
+  only:
+    - main
