@@ -1,6 +1,9 @@
 # Use official Python image as the base image
 FROM python:3.9-slim
 
+# Install curl
+RUN apt-get update && apt-get install -y curl
+
 # Set working directory inside the container
 WORKDIR /app
 
@@ -16,3 +19,4 @@ EXPOSE 5000
 
 # Command to run the application
 CMD ["python3", "app.py"]
+
